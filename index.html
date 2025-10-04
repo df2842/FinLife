@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Capital Quest </title>
+    <title>Capital Quest</title>
     <link rel="icon" type="image/png" href="logo_draft.png">
     <link rel="stylesheet" href="style.css">
 </head>
@@ -15,14 +15,13 @@
             <div class="spinner"></div>
         </div>
         <div id="instruction-screen" class="hidden">
-            <p>YOUR GOAL IS TO NAVIGATE LIFE BY MAKING GOOD FINANCIAL DECISION. TRY TO RETIRE WITH THE HIGHEST NETWORTH! </p>
-
-            <p>ALL ENTITIES ARE FICTIONAL AND ARE RANDOMLY GENERATED. ALL TRADEMARKS ARE THE PROPERTY OF THEIR RESPECTIVE OWNERS.</p>
-         
+            <h1>Welcome to Capital Quest!</h1>
+            <p>Your goal is to navigate life by making financial decisions. Try to retire with the highest net worth possible!</p>
+            <p>All trademarks are the property of their respective owners. any resembelnce to real people or real events is coincidental.</p>
         </div>
 
         <div id="game-content" class="hidden">
-            <h1 id="heading-basic">Capital Quest - Life Simulator</h1>
+            <h1 id="heading-basic">Capital Quest</h1>
             <header id="status-bar">
                 <div id="age-display">Age: 16</div>
                 <div id="money-bar-container">
@@ -34,15 +33,27 @@
                     <p id="story-text"></p>
                 </div>
                 <div id="choices-container"></div>
+                <div id="next-year-container" class="hidden">
+                    <button id="next-year-button">Advance to Next Year</button>
+                </div>
             </main>
         </div>
-
     </div>
 
     <div id="scorecard-modal" class="hidden">
+        <h2 id="persona-title"></h2>
+        <p id="summary-text"></p>
+        <div class="decision-box">
+            <h3>Best Decisions</h3>
+            <p id="best-decisions"></p>
         </div>
+        <div class="decision-box">
+            <h3>Worst Decisions</h3>
+            <p id="worst-decisions"></p>
+        </div>
+        <button id="restart-button">Play Again</button>
+    </div>
 
     <script src="script.js"></script>
-
 </body>
 </html>
