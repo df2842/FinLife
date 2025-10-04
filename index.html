@@ -1,0 +1,48 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Capital Quest </title>
+    <link rel="icon" type="image/png" href="logo_draft.png">
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+    <div id="game-container">
+        
+        <div id="loader">
+            <div class="spinner"></div>
+        </div>
+        <div id="instruction-screen" class="hidden">
+            <p>YOUR GOAL IS TO NAVIGATE LIFE BY MAKING GOOD FINANCIAL DECISION. TRY TO RETIRE WITH THE HIGHEST NETWORTH! </p>
+
+            <p>ALL ENTITIES ARE FICTIONAL AND ARE RANDOMLY GENERATED. ALL TRADEMARKS ARE THE PROPERTY OF THEIR RESPECTIVE OWNERS.</p>
+         
+        </div>
+
+        <div id="game-content" class="hidden">
+            <h1 id="heading-basic">Capital Quest - Life Simulator</h1>
+            <header id="status-bar">
+                <div id="age-display">Age: 16</div>
+                <div id="money-bar-container">
+                    <span id="money-display">$500</span>
+                </div>
+            </header>
+            <main>
+                <div id="story-panel">
+                    <p id="story-text"></p>
+                </div>
+                <div id="choices-container"></div>
+            </main>
+        </div>
+
+    </div>
+
+    <div id="scorecard-modal" class="hidden">
+        </div>
+
+    <script src="script.js"></script>
+
+</body>
+</html>
