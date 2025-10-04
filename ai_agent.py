@@ -12,6 +12,7 @@ def _call_generative_model(prompt):
         response = model.generate_content(prompt)
         cleaned_text = response.text.replace("```json", "").replace("```", "").strip()
         return json.loads(cleaned_text)
+
     except Exception as e:
         print(f"Error calling Generative AI Model: {e}")
         return {"error": "Failed to generate scenario from AI model."}

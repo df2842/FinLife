@@ -8,7 +8,7 @@ import ai_agent
 app = Flask(__name__)
 CORS(app)
 
-PORT = 3000
+PORT = 5500
 START_BALANCE = 50000
 ANNUAL_EXPENSES = 40000
 START_AGE = 16
