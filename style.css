@@ -1,196 +1,145 @@
-/* ==========================================================================
-   1. FONT IMPORTS
-   ========================================================================== */
-   @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap');
-   @import url('https://fonts.googleapis.com/css2?family=Oswald:wght@700&display=swap');
-   
-   /* ==========================================================================
-      2. GENERAL STYLES
-      ========================================================================== */
-   * {
-       box-sizing: border-box;
-       margin: 0;
-       padding: 0;
-   }
-   
-   body {
-       font-family: 'Inter', sans-serif;
-       background-color: #476e6e; /* Dark Navy Background */
-       color: #e2e8f0;      /* Light Gray Text */
-       display: flex;
-       justify-content: center;
-       align-items: center;
-       min-height: 100vh;
-       padding: 20px;
-   }
-   
-   /* ==========================================================================
-      3. SCREEN LAYOUTS & OVERLAYS
-      ========================================================================== */
-   
-   /* --- Main Game Container - The "Phone Screen" --- */
-   #game-container {
-       position: relative;
-       background-color: #9cbc7e; 
-       width: 100%;
-       max-width: 420px;
-       height: 700px;
-       border-radius: 20px;
-       box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
-       overflow: hidden;
-   }
-   
-   /* --- Overlays (Loader & Instructions) --- */
-   #loader, #instruction-screen {
-       position: absolute;
-       top: 0;
-       left: 0;
-       width: 100%;
-       height: 100%;
-       display: flex;
-       align-items: center;
-       justify-content: center;
-       transition: opacity 0.75s, visibility 0.75s;
-       border-radius: 20px;
-   }
-   #loader {
-       background-color: #2d3748; /* Match Game Container */
-       z-index: 100;
-   }
-   #instruction-screen {
-       background-color: #cad472; /* Match Body Background */
-       flex-direction: column;
-       justify-content: center;
-       text-align: center;
-       padding: 2rem;
-       z-index: 99;
-       cursor: pointer;
-   }
-   
-   /* --- Actual Game Content Wrapper --- */
-   #game-content {
-       width: 100%;
-       height: 100%;
-       display: flex;
-       flex-direction: column;
-   }
-   
-   /* ==========================================================================
-      4. COMPONENT STYLES
-      ========================================================================== */
-   
-   /* --- Instruction Screen Content --- */
-   
-   #instruction-screen p {
-       font-family: 'Oswald', sans-serif;
-       color: #ffffff;
-       font-size: 1.3rem;
-       line-height: 1.6;
-       max-width: 90%;
-       text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.5);
-   }
-   #instruction-screen button {
-       font-family: 'Oswald', sans-serif;
-       font-size: 1.3rem;
-       font-weight: 700;
-       color: #cad472;
-       background-color: #ffffff; /* Green Accent */
-       border: none;
-       padding: 1rem 2.5rem;
-       border-radius: 12px;
-       cursor: pointer;
-       transition: all 0.2s ease;
-       text-transform: uppercase;
-       margin-top: 4rem
-   }
-   #instruction-screen button:hover {
-       background-color: #edf885; /* Lighter Green on Hover */
-       transform: scale(1.05);
-   }
-   
-   /* --- Main Title --- */
-   #heading-basic {
-       font-family: 'Oswald', sans-serif;
-       font-size: 1.5rem;
-       text-align: center;
-       padding: 1.5rem 1rem 0.5rem;
-       text-transform: uppercase;
-   }
-   
-   /* --- Status Bar --- */
-   #status-bar {
-       display: flex;
-       justify-content: space-between;
-       align-items: center;
-       padding: 1rem 1.5rem;
-   }
-   #age-display, #money-bar-container {
-       font-family: 'Inter', sans-serif;
-       font-size: 1rem;
-       font-weight: 600;
-       background-color: #1a202c; /* Match Body Background */
-       text-align: center;
-       border-radius: 8px;
-       padding: 0.5rem;
-       border: 1px solid #4a5568; /* Subtle Border */
-   }
-   #money-bar-container {
-       width: 85px;
-   }
-   
-   /* --- Story & Choices --- */
-   #story-panel {
-       flex-grow: 1;
-       padding: 1rem 1.5rem;
-       display: flex;
-       align-items: center;
-   }
-   #story-text {
-       font-size: 1.25rem;
-       line-height: 1.6;
-   }
-   #choices-container {
-       display: grid;
-       gap: 0.75rem;
-       padding: 1.5rem;
-   }
-   #choices-container button {
-       font-family: 'Inter', sans-serif;
-       font-size: 1rem;
-       font-weight: 600;
-       color: #ffffff;
-       background-color: #38a169; /* Green Accent */
-       border: none;
-       padding: 1rem;
-       border-radius: 12px;
-       cursor: pointer;
-       transition: all 0.2s ease;
-       text-align: left;
-   }
-   #choices-container button:hover {
-       background-color: #48bb78; /* Lighter Green on Hover */
-   }
-   
-   /* ==========================================================================
-      5. UTILITY & ANIMATION
-      ========================================================================== */
-   .hidden {
-       display: none !important;
-   }
-   .loader--hidden {
-       opacity: 0;
-       visibility: hidden;
-   }
-   .spinner {
-       width: 50px;
-       height: 50px;
-       border: 5px solid rgba(255, 255, 255, 0.2);
-       border-top-color: #48bb78; /* Green Accent Spinner */
-       border-radius: 50%;
-       animation: spin 1s linear infinite;
-   }
-   @keyframes spin {
-       to {
-           transform: rotate(360deg);
-       }
-   }
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Oswald:wght@700&display=swap');
+
+/* --- General Styles --- */
+* { box-sizing: border-box; margin: 0; padding: 0; }
+body {
+    font-family: 'Inter', sans-serif;
+    background-color: #344e41; /* Dark Green-Slate */
+    color: #344e41;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    min-height: 100vh;
+    padding: 20px;
+}
+
+/* --- Main Game Container --- */
+#game-container {
+    position: relative;
+    background-color: #f2f2f2; /* Creamy Off-white */
+    width: 100%;
+    max-width: 420px;
+    height: 700px;
+    border-radius: 20px;
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+    overflow: hidden;
+}
+
+/* --- Overlays --- */
+#loader, #instruction-screen {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: opacity 0.75s, visibility 0.75s;
+    border-radius: 20px;
+}
+#loader {
+    background-color: #f2f2f2;
+    z-index: 100;
+}
+#instruction-screen {
+    background-color: #344e41; /* Dark Green-Slate */
+    flex-direction: column;
+    text-align: center;
+    padding: 2rem;
+    z-index: 99;
+    text-transform: uppercase;
+    text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.2);
+}
+#instruction-screen h1 {
+    font-family: 'Oswald', sans-serif;
+    color: #ffffff;
+    font-size: 2.5rem;
+    text-transform: uppercase;
+    margin-bottom: 1rem;
+    text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.2);
+}
+#instruction-screen p { color: #f2f2f2; margin-bottom: 1.5rem;  font-family: 'Oswald', sans-serif;
+    color: #ffffff;
+    text-transform: uppercase;
+    text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.2);}
+
+
+
+/* --- Game Content --- */
+#game-content { width: 100%; height: 100%; display: flex; flex-direction: column; }
+#heading-basic {
+    font-family: 'Oswald', sans-serif;
+    font-size: 1.5rem;
+    text-align: center;
+    padding: 1.5rem 1rem 0.5rem;
+    text-transform: uppercase;
+}
+#status-bar { display: flex; justify-content: space-between; align-items: center; padding: 1rem 1.5rem; }
+#age-display, #money-bar-container {
+    font-size: 1rem;
+    font-weight: 600;
+    background-color: #e6e6e6;
+    text-align: center;
+    border-radius: 8px;
+    padding: 0.5rem;
+    border: 1px solid #dcdcdc;
+}
+#money-bar-container { width: 85px; }
+#story-panel { flex-grow: 1; padding: 1rem 1.5rem; display: flex; align-items: center; }
+#story-text { font-size: 1.25rem; line-height: 1.6; }
+#choices-container { display: grid; gap: 0.75rem; padding: 1.5rem; }
+#choices-container button, #next-year-button {
+    font-family: 'Inter', sans-serif;
+    font-size: 1rem;
+    font-weight: 600;
+    color: #ffffff;
+    background-color: #588157; /* Primary Green */
+    border: none;
+    padding: 1rem;
+    border-radius: 12px;
+    cursor: pointer;
+    transition: background-color 0.2s;
+    text-align: left;
+}
+#choices-container button:hover, #next-year-button:hover { background-color: #6b9d6a; }
+#next-year-container { padding: 1.5rem; }
+#next-year-button { text-align: center; width: 100%; font-family: 'Oswald', sans-serif; text-transform: uppercase; }
+
+/* --- Scorecard & Utilities --- */
+#scorecard-modal {
+    position: fixed;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    background-color: #f2f2f2;
+    padding: 2rem;
+    border-radius: 20px;
+    box-shadow: 0 10px 40px rgba(0, 0, 0, 0.3);
+    z-index: 1000;
+    width: 90%;
+    max-width: 400px;
+    max-height: 80vh;
+    display: flex;
+    flex-direction: column;
+    text-align: center;
+}
+#scorecard-modal h2 { font-family: 'Oswald', sans-serif; margin-bottom: 1rem; }
+#scorecard-modal h3 { font-family: 'Oswald', sans-serif; margin-top: 1rem; border-top: 1px solid #dcdcdc; padding-top: 1rem;}
+#scorecard-modal .decision-box { margin-bottom: 1rem; }
+#restart-button {
+    font-family: 'Oswald', sans-serif; font-size: 1.2rem; color: #ffffff; background-color: #588157;
+    border: none; padding: 0.8rem 1.5rem; border-radius: 12px; cursor: pointer; margin-top: 1rem; text-transform: uppercase;
+}
+.hidden { display: none !important; }
+.loader--hidden { opacity: 0; visibility: hidden; }
+.spinner {
+    width: 50px;
+    height: 50px;
+    border: 5px solid rgba(52, 78, 65, 0.2);
+    border-top-color: #344e41;
+    border-radius: 50%;
+    animation: spin 1s linear infinite;
+}
+@keyframes spin { to { transform: rotate(360deg); } }
