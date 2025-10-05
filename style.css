@@ -1,7 +1,6 @@
 @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap');
 @import url('https://fonts.googleapis.com/css2?family=Oswald:wght@700&display=swap');
 
-/* --- General Styles --- */
 * { box-sizing: border-box; margin: 0; padding: 0; }
 body {
     font-family: 'Inter', sans-serif;
@@ -14,7 +13,6 @@ body {
     padding: 20px;
 }
 
-/* --- Main Game Container --- */
 #game-container {
     background-color: #f2f2f2;
     width: 100%;
@@ -27,7 +25,6 @@ body {
     flex-direction: column;
 }
 
-/* --- Start Screen --- */
 #start-screen {
     padding: 2rem;
     text-align: center;
@@ -57,8 +54,6 @@ body {
 }
 #start-screen .disclaimer { font-size: 0.75rem; color: #888; margin-top: auto; padding-top: 1rem; }
 
-
-/* --- Game Content --- */
 #game-content { display: flex; flex-direction: column; flex-grow: 1; }
 #heading-basic {
     font-family: 'Oswald', sans-serif;
@@ -84,11 +79,10 @@ main {
     flex-direction: column;
     min-height: 0;
 }
-/* FINAL FIX: Using flex shorthand and overflow-y: auto */
 #story-panel {
-    flex: 1 1 0; /* Ensures panel grows but shrinks to minimum content size */
+    flex: 1 1 0;
     padding: 1rem 1.5rem;
-    overflow-y: auto; /* Activates scrolling when content overflows its constrained height */
+    overflow-y: auto;
 }
 #scenario-title {
     font-family: 'Oswald', sans-serif;
@@ -104,7 +98,7 @@ main {
     font-size: 1rem;
     font-weight: 600;
     color: #ffffff;
-    background-color: #588157; /* Primary Green */
+    background-color: #588157;
     border: none;
     padding: 1rem;
     border-radius: 12px;
@@ -116,10 +110,9 @@ main {
 #next-year-container { padding: 1.5rem; }
 #next-year-button { text-align: center; width: 100%; font-family: 'Oswald', sans-serif; text-transform: uppercase; }
 
-/* --- Footer Utility Bar --- */
 #utility-bar {
     display: flex;
-    justify-content: space-between; /* Align Transaction Log to the right */
+    justify-content: space-between;
     padding: 1rem 1.5rem;
     background-color: #e6e6e6;
     border-top: 1px solid #dcdcdc;
@@ -173,8 +166,6 @@ main {
 .dropdown-content li span { float: right; font-weight: 600; }
 .show { display: block; }
 
-
-/* --- Scorecard & Utilities --- */
 #scorecard-modal {
     position: fixed; top: 0; left: 0; width: 100%; height: 100%;
     background: rgba(0, 0, 0, 0.6);
@@ -211,7 +202,6 @@ main {
 }
 @keyframes spin { to { transform: rotate(360deg); } }
 
-/* --- Optional: Custom Scrollbar Styling --- */
 #story-panel::-webkit-scrollbar {
   width: 8px;
 }

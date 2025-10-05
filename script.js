@@ -1,9 +1,9 @@
 document.addEventListener('DOMContentLoaded', () => {
     const API_BASE_URL = 'http://127.0.0.1:5000';
+    const START_BALANCE = 10000;
     let gameId = null;
     let transactionLog = [];
 
-    // --- DOM ELEMENTS ---
     const loader = document.getElementById('loader');
     const startScreen = document.getElementById('start-screen');
     const startButton = document.getElementById('start-button');
@@ -23,7 +23,6 @@ document.addEventListener('DOMContentLoaded', () => {
     const jumpAgeInput = document.getElementById('jump-age-input');
     const jumpButton = document.getElementById('jump-button');
 
-    // --- UI HELPERS ---
     function showLoader() { loader.classList.remove('hidden'); }
     function hideLoader() { loader.classList.add('hidden'); }
 
@@ -71,7 +70,7 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     function recalculateBalanceFromTransactions() {
-        let balance = 10000;
+        let balance = START_BALANCE;
         for (const tx of transactionLog) {
             if (tx.type === 'deposit') {
                 balance += tx.amount;
@@ -120,7 +119,6 @@ document.addEventListener('DOMContentLoaded', () => {
                 updateStatusUI(data.playerState);
             }
 
-            // --- NEW: Update transaction log & balance manually
             await updateTransactionLogAndBalance();
 
         } catch (error) {
@@ -215,7 +213,6 @@ document.addEventListener('DOMContentLoaded', () => {
         nextYearContainer.classList.add('hidden');
         storyText.textContent = `Initiating fast forward to age ${targetAge}...`;
 
-        // Send the target age to the new backend endpoint
         const response = await fetch(`${API_BASE_URL}/game/fast-forward`, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
@@ -231,17 +228,14 @@ document.addEventListener('DOMContentLoaded', () => {
         } else if (!response.ok || responseData.error) {
             alert(`Fast forward failed: ${responseData.error || 'Check console for server error.'}`);
             updateStatusUI(responseData.playerState);
-            // Re-enable decision/advance button
             nextYearContainer.classList.remove('hidden');
         } else {
-            // Receive final state and scenario and render once
             updateStatusUI(responseData.playerState);
             renderEvent(responseData.nextEvent);
             storyText.textContent = `Fast forward complete. You are now age ${targetAge}. Time to make your next decision!`;
         }
     });
 
-    // --- START GAME ---
     startButton.addEventListener('click', async () => {
         const firstName = firstNameInput.value.trim();
         const lastName = lastNameInput.value.trim();
