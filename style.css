@@ -18,8 +18,8 @@ body {
 #game-container {
     background-color: #f2f2f2;
     width: 100%;
-    max-width: 420px;
-    height: 700px;
+    max-width: 1080px;
+    height: 720px;
     border-radius: 20px;
     box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
     overflow: hidden;
