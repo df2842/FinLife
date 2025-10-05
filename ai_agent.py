@@ -21,7 +21,7 @@ def generate_mcq(name, age, date, balance, income, life_events, specifier="N/A")
     prompt = f"""
     You are a creative writer for a life simulation game called "FinLife".
     
-    Your goal is to generate a single, nuanced financial dilemma based on {name}'s current situation.
+    Your goal is to generate a single, nuanced financial dilemma based on {name}'s current situation. It must easily understandable by high school and early college students.
     If specified, the dilemma absolutely must focus on {specifier}. No exceptions.
     The current date in the simulation is {date}.
     The choices should focus on one-time financial events, investments, or unique opportunities, NOT steady sources of income. 
@@ -72,8 +72,9 @@ def generate_mcq(name, age, date, balance, income, life_events, specifier="N/A")
 def generate_jo(name, age, income, title, life_events):
     prompt = f"""
     You are a creative writer for a life simulation game called "FinLife".
+    
     Your goal is to generate a realistic job offer or promotion opportunity for {name} based on their current situation. 
-    The offer should be logically connected to their past life events.
+    The offer should be logically connected to their past life events. You can only offer a maximum of $500,000 and income should scale with age.
 
     --- Player Context ---
     Name: {name}

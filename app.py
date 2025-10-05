@@ -110,12 +110,12 @@ def advance_year():
 
         age = session["age"]
         if age == 18:
-            specifier = "paying for all four years of university"
+            specifier = "paying the entire 4-year tuition of a private university"
         elif age == 21:
             specifier = "paying for a car"
         elif age == 38:
             specifier = "paying for a house"
-        elif (age <= 30 and age % 2 == 0) or (age > 30 and age % 5 == 0):
+        elif (age < 30 and age % 3 == 1) or (age >= 30 and age % 5 == 0):
             event_type = "job"
 
         if event_type == "job":
