@@ -71,7 +71,7 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     function recalculateBalanceFromTransactions() {
-        let balance = 5000;
+        let balance = 10000;
         for (const tx of transactionLog) {
             if (tx.type === 'deposit') {
                 balance += tx.amount;

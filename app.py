@@ -9,7 +9,7 @@ app = Flask(__name__)
 CORS(app)
 
 PORT = 5000
-START_BALANCE = 50000
+START_BALANCE = 10000
 START_AGE = 16
 END_AGE = 67
 
