@@ -1,9 +1,9 @@
 document.addEventListener('DOMContentLoaded', () => {
-    // CRITICAL FIX: Ensure this port matches the port in your app.py file
     const API_BASE_URL = 'http://127.0.0.1:5000';
     let gameId = null;
+    let transactionLog = [];
 
-    // --- DOM ELEMENT SELECTION ---
+    // --- DOM ELEMENTS ---
     const loader = document.getElementById('loader');
     const startScreen = document.getElementById('start-screen');
     const startButton = document.getElementById('start-button');
@@ -18,25 +18,25 @@ document.addEventListener('DOMContentLoaded', () => {
     const firstNameInput = document.getElementById('firstName');
     const lastNameInput = document.getElementById('lastName');
     const scorecardModal = document.getElementById('scorecard-modal');
-    const jumpAgeInput = document.getElementById('jump-age-input');
-    const jumpButton = document.getElementById('jump-button');
     const historyButton = document.getElementById('history-button');
     const historyDropdown = document.getElementById('history-dropdown');
 
-    // --- UI HELPER FUNCTIONS ---
+    // --- UI HELPERS ---
     function showLoader() { loader.classList.remove('hidden'); }
     function hideLoader() { loader.classList.add('hidden'); }
 
     function updateStatusUI(playerState) {
-        ageDisplay.textContent = `Age: ${playerState.age}`;
-        // Use toLocaleString for better number formatting (e.g., $50,000)
-        moneyDisplay.textContent = `$${Math.round(playerState.balance).toLocaleString()}`;
+        if (!playerState) return;
+        if (playerState.age) ageDisplay.textContent = `Age: ${playerState.age}`;
+        if (playerState.hasOwnProperty('balance')) {
+            moneyDisplay.textContent = `$${Math.round(playerState.balance).toLocaleString()}`;
+        }
     }
 
     function renderEvent(event) {
         if (!event || event.error) {
             scenarioTitle.textContent = "An AI Error Occurred";
-            storyText.textContent = `There was a problem generating the next event: ${event ? event.error : 'Unknown error'}. Please try advancing a year.`;
+            storyText.textContent = `Problem generating the next event: ${event?.error || 'Unknown error'}. Try advancing a year.`;
             choicesContainer.innerHTML = '';
             choicesContainer.classList.add('hidden');
             nextYearContainer.classList.remove('hidden');
@@ -50,7 +50,6 @@ document.addEventListener('DOMContentLoaded', () => {
         event.choices.forEach(choice => {
             const button = document.createElement('button');
             button.textContent = choice.description;
-            // Check for 'action' (MCQ) or 'income' (Job) to determine event type
             button.onclick = () => handleChoiceClick(choice);
             choicesContainer.appendChild(button);
         });
@@ -61,8 +60,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
     function showScorecard(summary) {
         document.getElementById('persona-title').textContent = summary.persona_title || "Analysis Complete";
-        document.getElementById('summary-text').textContent = summary.summary || "Could not generate summary.";
-        // Assuming best_decision and worst_decision are arrays of strings
+        document.getElementById('summary-text').textContent = summary.summary || "No summary generated.";
         document.getElementById('best-decisions').innerHTML = Array.isArray(summary.best_decision)
             ? summary.best_decision.join('<br>') : summary.best_decision;
         document.getElementById('worst-decisions').innerHTML = Array.isArray(summary.worst_decision)
@@ -72,101 +70,140 @@ document.addEventListener('DOMContentLoaded', () => {
         document.getElementById('restart-button').onclick = () => window.location.reload();
     }
 
-    // --- API & EVENT HANDLERS ---
+    function recalculateBalanceFromTransactions() {
+        let balance = 5000;
+        for (const tx of transactionLog) {
+            if (tx.type === 'deposit') {
+                balance += tx.amount;
+            } else if (tx.type === 'withdrawal') {
+                balance -= tx.amount;
+            }
+        }
+        moneyDisplay.textContent = `$${Math.round(balance).toLocaleString()}`;
+    }
+
+    async function updateTransactionLogAndBalance() {
+        try {
+            const response = await fetch(`${API_BASE_URL}/game/history`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ gameId })
+            });
+            const data = await response.json();
+            transactionLog = data.transaction_history || [];
+            recalculateBalanceFromTransactions();
+        } catch (error) {
+            console.error("Failed to fetch transaction log:", error);
+        }
+    }
+
     async function handleChoiceClick(choice) {
         showLoader();
         choicesContainer.innerHTML = '';
 
-        // Determine endpoint by checking for a unique key in the financial_impact
         const endpoint = choice.financial_impact.hasOwnProperty('action') ? '/decision/mcq' : '/decision/job';
 
-        const response = await fetch(`${API_BASE_URL}${endpoint}`, {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ gameId, choice })
-        });
+        try {
+            const response = await fetch(`${API_BASE_URL}${endpoint}`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ gameId, choice })
+            });
 
-        const data = await response.json();
+            const data = await response.json();
+            if (!response.ok || data.error) throw new Error(data.error || `Server error: ${response.status}`);
 
-        // Check for and log any errors from the backend decision processing
-        if (!response.ok || data.error) {
-            console.error("Decision Error:", data.error || `Server error: ${response.status}`);
-            alert(`Error processing decision: ${data.error || 'Check console for server status.'}`);
+            scenarioTitle.textContent = "Decision Made";
+            storyText.textContent = `You decided: ${choice.description}`;
+
+            if (data.playerState) {
+                updateStatusUI(data.playerState);
+            }
+
+            // --- NEW: Update transaction log & balance manually
+            await updateTransactionLogAndBalance();
+
+        } catch (error) {
+            console.error("handleChoiceClick Error:", error);
+            alert(`Error processing decision: ${error.message}`);
+        } finally {
             hideLoader();
             choicesContainer.classList.add('hidden');
             nextYearContainer.classList.remove('hidden');
-            return;
         }
-
-        // FIX FOR BALANCE LAG: Use the playerState returned directly from the decision endpoint
-        updateStatusUI(data.playerState);
-
-        // Show the chosen option in the story panel
-        scenarioTitle.textContent = "Decision Made";
-        storyText.textContent = `You decided: ${choice.description}`;
-
-        hideLoader();
-        choicesContainer.classList.add('hidden');
-        nextYearContainer.classList.remove('hidden');
     }
 
     nextYearButton.addEventListener('click', async () => {
         showLoader();
-        const response = await fetch(`${API_BASE_URL}/game/advance-year`, {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ gameId })
-        });
-        const data = await response.json();
-        hideLoader();
+        try {
+            const response = await fetch(`${API_BASE_URL}/game/advance-year`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ gameId })
+            });
 
-        if (data.gameOver) {
-            showScorecard(data.finalSummary);
-        } else if (!response.ok || data.error) {
-            // Handle critical errors during year advance
+            const data = await response.json();
+            if (!response.ok || data.error) throw new Error(data.error || `Server error: ${response.status}`);
+
+            if (data.gameOver) {
+                showScorecard(data.finalSummary);
+            } else {
+                updateStatusUI(data.playerState);
+                renderEvent(data.nextEvent);
+                await updateTransactionLogAndBalance();
+            }
+
+        } catch (error) {
+            console.error("advance-year Error:", error);
             scenarioTitle.textContent = "Error Advancing Year";
-            storyText.textContent = `Error: ${data.error}. The game could not advance. Check the console.`;
-            choicesContainer.innerHTML = '';
-            choicesContainer.classList.add('hidden');
-            nextYearContainer.classList.remove('hidden');
-        } else {
-            updateStatusUI(data.playerState);
-            renderEvent(data.nextEvent);
+            storyText.textContent = `Error: ${error.message}. Could not advance.`;
+        } finally {
+            hideLoader();
         }
     });
 
     historyButton.addEventListener('click', async () => {
-        // Toggle visibility
         const isVisible = historyDropdown.classList.toggle('show');
-        if (!isVisible) return; // Hide if already shown
+        if (!isVisible) return;
 
         historyDropdown.innerHTML = '<li>Loading...</li>';
-        const response = await fetch(`${API_BASE_URL}/game/history`, {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ gameId })
-        });
-        const data = await response.json();
-        historyDropdown.innerHTML = '';
 
-        if (data.transaction_history && data.transaction_history.length > 0) {
-            data.transaction_history.forEach(item => {
-                const li = document.createElement('li');
-                // Format the transaction type and amount
-                const amountText = item.type === 'deposit' ? `(+$${Math.round(item.amount).toLocaleString()})`
-                                  : `(-$${Math.round(item.amount).toLocaleString()})`;
-                li.innerHTML = `<strong>${item.transaction_date}</strong>: ${item.description || item.type} <span>${amountText}</span>`;
-                historyDropdown.appendChild(li);
+        try {
+            const response = await fetch(`${API_BASE_URL}/game/history`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ gameId })
             });
-        } else {
-            historyDropdown.innerHTML = '<li>No transactions yet.</li>';
+            const data = await response.json();
+
+            transactionLog = data.transaction_history || [];
+            historyDropdown.innerHTML = '';
+
+            if (transactionLog.length > 0) {
+                transactionLog.forEach(item => {
+                    const li = document.createElement('li');
+                    const amountText = item.type === 'deposit'
+                        ? `(+\$${Math.round(item.amount).toLocaleString()})`
+                        : `(-\$${Math.round(item.amount).toLocaleString()})`;
+                    li.innerHTML = `<strong>${item.transaction_date}</strong>: ${item.description || item.type} <span>${amountText}</span>`;
+                    historyDropdown.appendChild(li);
+                });
+            } else {
+                historyDropdown.innerHTML = '<li>No transactions yet.</li>';
+            }
+
+            recalculateBalanceFromTransactions();
+
+        } catch (error) {
+            console.error("Failed to load history:", error);
+            historyDropdown.innerHTML = '<li>Error loading history</li>';
         }
     });
 
-    // --- MAIN GAME START ---
+    // --- START GAME ---
     startButton.addEventListener('click', async () => {
-        const firstName = firstNameInput.value;
-        const lastName = lastNameInput.value;
+        const firstName = firstNameInput.value.trim();
+        const lastName = lastNameInput.value.trim();
 
         if (!firstName || !lastName) {
             alert("Please enter a first and last name.");
@@ -178,7 +215,6 @@ document.addEventListener('DOMContentLoaded', () => {
         gameContent.classList.remove('hidden');
 
         try {
-            // 1. Start the game
             const response = await fetch(`${API_BASE_URL}/game/start`, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
@@ -191,13 +227,12 @@ document.addEventListener('DOMContentLoaded', () => {
             gameId = data.gameId;
             updateStatusUI(data.playerState);
 
-            // 2. Immediately advance to the first year (age 17) to get the first event
             nextYearButton.click();
 
         } catch (error) {
             hideLoader();
             console.error("Failed to start game:", error);
-            alert("Could not start the game. Please make sure the backend server is running correctly (check console for error).");
+            alert("Could not start the game. Make sure the backend is running.");
         }
     });
 });
