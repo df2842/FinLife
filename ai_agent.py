@@ -17,18 +17,19 @@ def _call_generative_model(prompt):
         print(f"Error calling Generative AI Model: {e}")
         return {"error": "Failed to generate scenario from AI model."}
 
-def generate_mcq(age, date, balance, income, life_events, specifier="N/A"):
+def generate_mcq(name, age, date, balance, income, life_events, specifier="N/A"):
     prompt = f"""
     You are a creative writer for a life simulation game called "FinLife".
-    The current date in the simulation is {date}.
     
-    Your goal is to generate a single, nuanced financial dilemma based on the player's current situation.
-    If specified, the dilemma must focus on {specifier}.
+    Your goal is to generate a single, nuanced financial dilemma based on {name}'s current situation.
+    If specified, the dilemma absolutely must focus on {specifier}. No exceptions.
+    The current date in the simulation is {date}.
     The choices should focus on one-time financial events, investments, or unique opportunities, NOT steady sources of income. 
     
     The dilemma must be relevant to the player's context.
 
     --- Player Context ---
+    Name: {name}
     Age: {age}
     Current Checking Balance: ${balance:,.2f}
     Yearly Income: ${income:,.2f}
@@ -67,13 +68,14 @@ def generate_mcq(age, date, balance, income, life_events, specifier="N/A"):
 
     return _call_generative_model(prompt)
 
-def generate_jo(age, income, title, life_events):
+def generate_jo(name, age, income, title, life_events):
     prompt = f"""
     You are a creative writer for a life simulation game called "FinLife".
-    Your goal is to generate a realistic job offer or promotion opportunity for a player based on their current situation. 
+    Your goal is to generate a realistic job offer or promotion opportunity for {name} based on their current situation. 
     The offer should be logically connected to their past life events.
 
     --- Player Context ---
+    Name: {name}
     Age: {age}
     Current Annual Income: ${income:,.2f}
     Current Job Title: {title}
@@ -107,16 +109,17 @@ def generate_jo(age, income, title, life_events):
 
     return _call_generative_model(prompt)
 
-def generate_fs(balance, income, history):
+def generate_fs(name, balance, income, history):
     simplified_history = [
         f"Date: {t.get('transaction_date')}, Type: {t.get('type')}, Amount: ${t.get('amount'):,.2f}, Desc: {t.get('description', 'N/A')}"
         for t in history
     ]
 
     prompt = f"""
-    You are a friendly and insightful financial advisor summarizing a person's simulated financial life from the game "FinLife".
+    You are a friendly and insightful financial advisor summarizing {name}'s simulated financial life from the game "FinLife".
 
     --- Final Player Stats ---
+    Name: {name}
     Final Balance: ${balance:,.2f}
     Final Annual Income: ${income:,.2f}
     --------------------------

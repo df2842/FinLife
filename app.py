@@ -10,7 +10,6 @@ CORS(app)
 
 PORT = 5000
 START_BALANCE = 50000
-ANNUAL_EXPENSES = 40000
 START_AGE = 16
 END_AGE = 67
 
@@ -30,14 +29,16 @@ def start_game():
 
         game_id = str(uuid.uuid4())
         game_sessions[game_id] = {
+            "name": first_name + " " + last_name,
             "customerId": customer_id,
             "accountId": account_id,
-            "age": START_AGE - 1,
+            "age": START_AGE,
             "currentDate": date(date.today().year, 1, 1),
             "balance": START_BALANCE,
             "income": 0,
             "jobTitle": "Unemployed",
-            "life_events": []
+            "life_events": [],
+            "started": False
         }
 
         response_state = game_sessions[game_id].copy()
@@ -74,20 +75,23 @@ def advance_year():
         return jsonify({"error": "Game session not found."}), 404
 
     try:
-        session["age"] += 1
-        session["currentDate"] += timedelta(days=365)
+        if session["started"]:
+            session["age"] += 1
+            session["currentDate"] += timedelta(days=365)
+        session["started"] = True
         sim_date = session["currentDate"].isoformat()
 
         if session["income"] > 0:
             api_client.make_deposit(session["accountId"], sim_date, session["income"], session["jobTitle"] + " Annual Salary")
-        if session["age"] >= 22:
-            api_client.make_withdrawal(session["accountId"], sim_date, ANNUAL_EXPENSES, "Annual Living Expenses")
+        if session["age"] >= 18:
+            annual_expenses = -45 * pow(session["age"], 2) + 4000 * session["age"] - 30000
+            api_client.make_withdrawal(session["accountId"], sim_date, annual_expenses, "Annual Living Expenses")
 
         session["balance"] = api_client.get_account_balance(session["accountId"])
 
         if session["age"] >= 67:
-            transaction_history = api_client.get_all_transactions_for_account(session["customerId"], session["accountId"])
-            final_summary = ai_agent.generate_fs(session["balance"], session["income"], transaction_history)
+            transaction_history = api_client.get_all_transactions_for_account(session["accountId"])
+            final_summary = ai_agent.generate_fs(session["name"], session["balance"], session["income"], transaction_history)
 
             response_state = session.copy()
             response_state["currentDate"] = response_state["currentDate"].isoformat()
@@ -106,7 +110,7 @@ def advance_year():
 
         age = session["age"]
         if age == 18:
-            specifier = "paying for all four years of college"
+            specifier = "paying for all four years of university"
         elif age == 21:
             specifier = "paying for a car"
         elif age == 38:
@@ -116,12 +120,12 @@ def advance_year():
 
         if event_type == "job":
             scenario = ai_agent.generate_jo(
-                session["age"], session["income"],
+                session["name"], session["age"], session["income"],
                 session["jobTitle"], session["life_events"]
             )
         else:
             scenario = ai_agent.generate_mcq(
-                session["age"], sim_date, session["balance"],
+                session["name"], session["age"], sim_date, session["balance"],
                 session["income"],
                 session["life_events"], specifier
             )
@@ -211,7 +215,7 @@ def get_history():
         return jsonify({"error": "Game session not found."}), 404
 
     try:
-        history = api_client.get_all_transactions_for_account(session["customerId"], session["accountId"])
+        history = api_client.get_all_transactions_for_account(session["accountId"])
         return jsonify({"transaction_history": history})
 
     except Exception as e:

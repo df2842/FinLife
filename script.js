@@ -18,6 +18,8 @@ document.addEventListener('DOMContentLoaded', () => {
     const firstNameInput = document.getElementById('firstName');
     const lastNameInput = document.getElementById('lastName');
     const scorecardModal = document.getElementById('scorecard-modal');
+    const jumpAgeInput = document.getElementById('jump-age-input');
+    const jumpButton = document.getElementById('jump-button');
     const historyButton = document.getElementById('history-button');
     const historyDropdown = document.getElementById('history-dropdown');
 

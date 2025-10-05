@@ -1,7 +1,6 @@
 import os
 import requests
 from dotenv import load_dotenv
-import re
 
 load_dotenv()
 API_KEY = os.getenv("CAPITAL_ONE_API_KEY")
@@ -43,7 +42,7 @@ def get_account_balance(account_id):
     response.raise_for_status()
     return response.json()["balance"]
 
-def get_all_transactions_for_account(customer_id, account_id):
+def get_all_transactions_for_account(account_id):
     try:
         deposits_url = f"{BASE_URL}/accounts/{account_id}/deposits?key={API_KEY}"
         withdrawals_url = f"{BASE_URL}/accounts/{account_id}/withdrawals?key={API_KEY}"
