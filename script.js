@@ -20,6 +20,8 @@ document.addEventListener('DOMContentLoaded', () => {
     const scorecardModal = document.getElementById('scorecard-modal');
     const historyButton = document.getElementById('history-button');
     const historyDropdown = document.getElementById('history-dropdown');
+    const jumpAgeInput = document.getElementById('jump-age-input');
+    const jumpButton = document.getElementById('jump-button');
 
     // --- UI HELPERS ---
     function showLoader() { loader.classList.remove('hidden'); }
@@ -59,12 +61,10 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     function showScorecard(summary) {
-        document.getElementById('persona-title').textContent = summary.persona_title || "Analysis Complete";
-        document.getElementById('summary-text').textContent = summary.summary || "No summary generated.";
-        document.getElementById('best-decisions').innerHTML = Array.isArray(summary.best_decision)
-            ? summary.best_decision.join('<br>') : summary.best_decision;
-        document.getElementById('worst-decisions').innerHTML = Array.isArray(summary.worst_decision)
-            ? summary.worst_decision.join('<br>') : summary.worst_decision;
+        document.getElementById('persona-title').textContent = summary.persona_title;
+        document.getElementById('summary-text').textContent = summary.summary;
+        document.getElementById('best-decisions').innerHTML = summary.best_decision;
+        document.getElementById('worst-decisions').innerHTML = summary.worst_decision;
 
         scorecardModal.classList.remove('hidden');
         document.getElementById('restart-button').onclick = () => window.location.reload();
@@ -162,6 +162,7 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     });
 
+
     historyButton.addEventListener('click', async () => {
         const isVisible = historyDropdown.classList.toggle('show');
         if (!isVisible) return;
@@ -197,6 +198,46 @@ document.addEventListener('DOMContentLoaded', () => {
         } catch (error) {
             console.error("Failed to load history:", error);
             historyDropdown.innerHTML = '<li>Error loading history</li>';
+        }
+    });
+
+    jumpButton.addEventListener('click', async () => {
+        const currentAge = parseInt(ageDisplay.textContent.replace('Age: ', ''), 10);
+        const targetAge = parseInt(jumpAgeInput.value, 10);
+
+        if (isNaN(targetAge) || targetAge <= currentAge || targetAge > 67) {
+            alert(`Please enter a valid target age between ${currentAge + 1} and 67.`);
+            return;
+        }
+
+        showLoader();
+        choicesContainer.innerHTML = '';
+        nextYearContainer.classList.add('hidden');
+        storyText.textContent = `Initiating fast forward to age ${targetAge}...`;
+
+        // Send the target age to the new backend endpoint
+        const response = await fetch(`${API_BASE_URL}/game/fast-forward`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ gameId: gameId, targetAge: targetAge })
+        });
+
+        const responseData = await response.json();
+        hideLoader();
+        jumpAgeInput.value = '';
+
+        if (responseData.gameOver) {
+            showScorecard(responseData.finalSummary);
+        } else if (!response.ok || responseData.error) {
+            alert(`Fast forward failed: ${responseData.error || 'Check console for server error.'}`);
+            updateStatusUI(responseData.playerState);
+            // Re-enable decision/advance button
+            nextYearContainer.classList.remove('hidden');
+        } else {
+            // Receive final state and scenario and render once
+            updateStatusUI(responseData.playerState);
+            renderEvent(responseData.nextEvent);
+            storyText.textContent = `Fast forward complete. You are now age ${targetAge}. Time to make your next decision!`;
         }
     });
 

@@ -130,9 +130,9 @@ def generate_fs(name, balance, income, history):
 
     Based on all of the data provided, please perform the following analysis:
     1.  **Financial Persona:** Give the player a descriptive persona title (e.g., "The Cautious Saver", "The Ambitious Investor", "The High-Risk Entrepreneur").
-    2.  **Summary:** Write a short, encouraging paragraph summarizing their final balance, annual income, and financial journey, explaining their persona.
-    3.  **Best Decision:** Identify their three best financial decisions from the transaction history. Describe the transactions and explain briefly why they were smart moves.
-    4.  **Worst Decision:** Identify their three worst financial decisions from the transaction history. Describe the transactions and explain briefly why they were poor moves.
+    2.  **Summary:** Write a short, encouraging paragraph summarizing their financial journey, explaining their persona. Do not show the final balance or income.
+    3.  **Best Decision:** Identify their best financial decisions from the transaction history. Describe the transactions and explain briefly why they were smart moves in sentences.
+    4.  **Worst Decision:** Identify their worst financial decisions from the transaction history. Describe the transactions and explain briefly why they were poor moves in sentences.
 
     Your response must be only a valid JSON object with the keys: "persona_title", "summary", "best_decision", and "worst_decision".
     """

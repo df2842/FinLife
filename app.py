@@ -159,10 +159,10 @@ def make_mcq_decision():
         description = impact["description"]
         sim_date = session["currentDate"].isoformat()
 
-        if action == "DEPOSIT":
-            api_client.make_deposit(session["accountId"], sim_date, amount, description)
-        elif action == "WITHDRAWAL":
+        if action == "WITHDRAWAL":
             api_client.make_withdrawal(session["accountId"], sim_date, amount, description)
+        else:
+            api_client.make_deposit(session["accountId"], sim_date, amount, description)
 
         session["balance"] = api_client.get_account_balance(session["accountId"])
         session["life_events"].append(description)
@@ -205,6 +205,88 @@ def make_job_decision():
     except Exception as e:
         print(f"Error making Job decision: {e}")
         return jsonify({"error": "Failed to process job decision."}), 500
+
+@app.route('/game/fast-forward', methods=['POST'])
+def fast_forward():
+    data = request.json
+    game_id = data.get("gameId")
+    target_age = data.get("targetAge")
+    session = game_sessions.get(game_id)
+    if not session:
+        return jsonify({"error": "Game session not found."}), 404
+
+    current_age = session["age"]
+
+    if not isinstance(target_age, int) or target_age <= current_age or target_age > END_AGE:
+        return jsonify({"error": f"Invalid target age. Must be a number between {current_age + 1} and {END_AGE}."}), 400
+
+    try:
+        while session["age"] < target_age:
+            session["age"] += 1
+            session["currentDate"] += timedelta(days=365)
+        sim_date = session["currentDate"].isoformat()
+
+        if session["income"] > 0:
+            api_client.make_deposit(session["accountId"], sim_date, session["income"], session["jobTitle"] + " Annual Salary")
+        if session["age"] >= 18:
+            annual_expenses = -45 * pow(session["age"], 2) + 4000 * session["age"] - 30000
+            api_client.make_withdrawal(session["accountId"], sim_date, annual_expenses, "Annual Living Expenses")
+
+        session["balance"] = api_client.get_account_balance(session["accountId"])
+
+        if session["age"] >= 67:
+            transaction_history = api_client.get_all_transactions_for_account(session["accountId"])
+            final_summary = ai_agent.generate_fs(session["name"], session["balance"], session["income"], transaction_history)
+
+            response_state = session.copy()
+            response_state["currentDate"] = response_state["currentDate"].isoformat()
+
+            del game_sessions[game_id]
+
+            return jsonify({
+                "gameOver": True,
+                "message": "You've reached the retirement age of 67. Your financial journey is complete!",
+                "playerState": response_state,
+                "finalSummary": final_summary
+            })
+
+        event_type = "mcq"
+        specifier = "N/A"
+
+        age = session["age"]
+        if age == 18:
+            specifier = "paying for all four years of university"
+        elif age == 21:
+            specifier = "paying for a car"
+        elif age == 38:
+            specifier = "paying for a house"
+        elif (age <= 30 and age % 2 == 0) or (age > 30 and age % 5 == 0):
+            event_type = "job"
+
+        if event_type == "job":
+            scenario = ai_agent.generate_jo(
+                session["name"], session["age"], session["income"],
+                session["jobTitle"], session["life_events"]
+            )
+        else:
+            scenario = ai_agent.generate_mcq(
+                session["name"], session["age"], sim_date, session["balance"],
+                session["income"],
+                session["life_events"], specifier
+            )
+
+        response_state = session.copy()
+        response_state["currentDate"] = response_state["currentDate"].isoformat()
+
+        return jsonify({
+            "message": f"You are now {age} years old.",
+            "playerState": response_state,
+            "nextEvent": scenario
+        })
+
+    except Exception as e:
+        print(f"Error during fast forward: {e}")
+        return jsonify({"error": "Failed to fast forward."}), 500
 
 @app.route('/game/history', methods=['POST'])
 def get_history():
