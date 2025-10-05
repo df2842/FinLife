@@ -37,42 +37,6 @@ def make_withdrawal(account_id, date, amount, description):
     response = requests.post(url, json=payload)
     response.raise_for_status()
 
-def create_loan(customer_id, date, amount, description):
-    url = f"{BASE_URL}/customers/{customer_id}/loans?key={API_KEY}"
-    payload = {
-        "type": "personal",
-        "status": "approved",
-        "amount": amount,
-        "description": f"{description} (Created on: {date})"
-    }
-    response = requests.post(url, json=payload)
-    response.raise_for_status()
-    return response.json()["objectCreated"]["_id"]
-
-def make_loan_payment(loan_id, paying_account_id, date, amount):
-    url = f"{BASE_URL}/loans/{loan_id}/payments?key={API_KEY}"
-    payload = {
-        "medium": "balance",
-        "payer_account_id": paying_account_id,
-        "transaction_date": date,
-        "amount": amount,
-        "description": "Payment for Loan"
-    }
-    response = requests.post(url, json=payload)
-    response.raise_for_status()
-
-def get_all_loans(customer_id):
-    url = f"{BASE_URL}/customers/{customer_id}/loans?key={API_KEY}"
-    try:
-        response = requests.get(url)
-        response.raise_for_status()
-        return response.json()
-    except requests.exceptions.HTTPError as e:
-        if e.response.status_code == 404:
-            return []
-        else:
-            raise
-
 def get_account_balance(account_id):
     url = f"{BASE_URL}/accounts/{account_id}?key={API_KEY}"
     response = requests.get(url)
@@ -83,24 +47,14 @@ def get_all_transactions_for_account(customer_id, account_id):
     try:
         deposits_url = f"{BASE_URL}/accounts/{account_id}/deposits?key={API_KEY}"
         withdrawals_url = f"{BASE_URL}/accounts/{account_id}/withdrawals?key={API_KEY}"
-        payments_url = f"{BASE_URL}/accounts/{account_id}/payments?key={API_KEY}"
 
         deposits = requests.get(deposits_url).json()
         withdrawals = requests.get(withdrawals_url).json()
-        payments = requests.get(payments_url).json()
-        loans = get_all_loans(customer_id)
 
         for d in deposits: d['type'] = 'deposit'
         for w in withdrawals: w['type'] = 'withdrawal'
-        for p in payments: p['type'] = 'payment'
-        for l in loans:
-            l['type'] = 'loan_created'
-            description = l.get('description', '')
-            match = re.search(r'\(Created on: (....-..-..)\)', description)
-            if match:
-                l['transaction_date'] = match.group(1)
 
-        all_events = deposits + withdrawals + payments + loans
+        all_events = deposits + withdrawals
         all_events = [t for t in all_events if t.get('transaction_date')]
         all_events.sort(key=lambda x: x['transaction_date'], reverse=True)
 

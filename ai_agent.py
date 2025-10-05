@@ -17,13 +17,7 @@ def _call_generative_model(prompt):
         print(f"Error calling Generative AI Model: {e}")
         return {"error": "Failed to generate scenario from AI model."}
 
-def generate_mcq(age, date, balance, income, loans, life_events, specifier="N/A"):
-    if loans:
-        loan_descriptions = [f"'{loan.get('description')}' with ${loan.get('remaining_amount', 0):,.2f} remaining" for loan in loans]
-        formatted_loans = ", ".join(loan_descriptions)
-    else:
-        formatted_loans = "None"
-
+def generate_mcq(age, date, balance, income, life_events, specifier="N/A"):
     prompt = f"""
     You are a creative writer for a life simulation game called "FinLife".
     The current date in the simulation is {date}.
@@ -38,7 +32,6 @@ def generate_mcq(age, date, balance, income, loans, life_events, specifier="N/A"
     Age: {age}
     Current Checking Balance: ${balance:,.2f}
     Yearly Income: ${income:,.2f}
-    Active Loans: {formatted_loans}
     Notable Past Life Events: {life_events if life_events else 'None'}
     --------------------
 
@@ -46,9 +39,8 @@ def generate_mcq(age, date, balance, income, loans, life_events, specifier="N/A"
     1.  A "description" of the choice. This description MUST end with a parenthesized summary of the financial impact. 
         - For DEPOSIT, use (+$<amount>).
         - For WITHDRAWAL, use (-$<amount>).
-        - For CREATE_LOAN, use (Loan: $<amount>).
     2.  A "financial_impact" JSON object. This object MUST contain a string "action", an integer "amount", and a string "description".
-        The action must be one of: ["DEPOSIT", "WITHDRAWAL", "CREATE_LOAN"].
+        The action must be one of: ["DEPOSIT", "WITHDRAWAL"].
 
     Example Output Format (for a player who previously started a side-hustle):
     {{
@@ -115,13 +107,7 @@ def generate_jo(age, income, title, life_events):
 
     return _call_generative_model(prompt)
 
-def generate_fs(balance, income, loans, history):
-    if loans:
-        loan_descriptions = [f"'{loan.get('description', '')}' with ${loan.get('remaining_amount', 0):,.2f} remaining" for loan in loans]
-        formatted_loans = ", ".join(loan_descriptions)
-    else:
-        formatted_loans = "None"
-
+def generate_fs(balance, income, history):
     simplified_history = [
         f"Date: {t.get('transaction_date')}, Type: {t.get('type')}, Amount: ${t.get('amount'):,.2f}, Desc: {t.get('description', 'N/A')}"
         for t in history
@@ -133,7 +119,6 @@ def generate_fs(balance, income, loans, history):
     --- Final Player Stats ---
     Final Balance: ${balance:,.2f}
     Final Annual Income: ${income:,.2f}
-    Outstanding Loans: {formatted_loans}
     --------------------------
 
     --- Complete Transaction History ---
@@ -142,7 +127,7 @@ def generate_fs(balance, income, loans, history):
 
     Based on all of the data provided, please perform the following analysis:
     1.  **Financial Persona:** Give the player a descriptive persona title (e.g., "The Cautious Saver", "The Ambitious Investor", "The High-Risk Entrepreneur").
-    2.  **Summary:** Write a short, encouraging paragraph summarizing their final balance, annual income, outstanding loans, and financial journey, explaining their persona.
+    2.  **Summary:** Write a short, encouraging paragraph summarizing their final balance, annual income, and financial journey, explaining their persona.
     3.  **Best Decision:** Identify their three best financial decisions from the transaction history. Describe the transactions and explain briefly why they were smart moves.
     4.  **Worst Decision:** Identify their three worst financial decisions from the transaction history. Describe the transactions and explain briefly why they were poor moves.
 

@@ -37,7 +37,6 @@ def start_game():
             "balance": START_BALANCE,
             "income": 0,
             "jobTitle": "Unemployed",
-            "loans": [],
             "life_events": []
         }
 
@@ -85,11 +84,10 @@ def advance_year():
             api_client.make_withdrawal(session["accountId"], sim_date, ANNUAL_EXPENSES, "Annual Living Expenses")
 
         session["balance"] = api_client.get_account_balance(session["accountId"])
-        session["loans"] = api_client.get_all_loans(session["customerId"])
 
         if session["age"] >= 67:
             transaction_history = api_client.get_all_transactions_for_account(session["customerId"], session["accountId"])
-            final_summary = ai_agent.generate_fs(session["balance"], session["income"], session["loans"], transaction_history)
+            final_summary = ai_agent.generate_fs(session["balance"], session["income"], transaction_history)
 
             response_state = session.copy()
             response_state["currentDate"] = response_state["currentDate"].isoformat()
@@ -108,11 +106,11 @@ def advance_year():
 
         age = session["age"]
         if age == 18:
-            specifier = "paying or borrowing for college"
+            specifier = "paying for all four years of college"
         elif age == 21:
-            specifier = "paying or borrowing for a car"
+            specifier = "paying for a car"
         elif age == 38:
-            specifier = "paying or borrowing for a house"
+            specifier = "paying for a house"
         elif (age <= 30 and age % 2 == 0) or (age > 30 and age % 5 == 0):
             event_type = "job"
 
@@ -124,7 +122,7 @@ def advance_year():
         else:
             scenario = ai_agent.generate_mcq(
                 session["age"], sim_date, session["balance"],
-                session["income"], session["loans"],
+                session["income"],
                 session["life_events"], specifier
             )
 
@@ -161,11 +159,8 @@ def make_mcq_decision():
             api_client.make_deposit(session["accountId"], sim_date, amount, description)
         elif action == "WITHDRAWAL":
             api_client.make_withdrawal(session["accountId"], sim_date, amount, description)
-        elif action == "CREATE_LOAN":
-            api_client.create_loan(session["customerId"], sim_date, amount, description)
 
         session["balance"] = api_client.get_account_balance(session["accountId"])
-        session["loans"] = api_client.get_all_loans(session["customerId"])
         session["life_events"].append(description)
 
         response_state = session.copy()
@@ -206,41 +201,6 @@ def make_job_decision():
     except Exception as e:
         print(f"Error making Job decision: {e}")
         return jsonify({"error": "Failed to process job decision."}), 500
-
-@app.route('/game/pay-loan', methods=['POST'])
-def pay_loan():
-    data = request.json
-    game_id = data.get("gameId")
-    amount = data.get("amount")
-    session = game_sessions.get(game_id)
-    if not session:
-        return jsonify({"error": "Game session not found."}), 404
-    if not amount or amount <= 0:
-        return jsonify({"error": "A valid payment amount is required."}), 400
-
-    if not session["loans"]:
-        return jsonify({"message": "You have no loans to pay off!", "playerState": session}), 200
-
-    try:
-        loan_to_pay = session["loans"][0]
-        loan_id = loan_to_pay["_id"]
-
-        api_client.make_loan_payment(loan_id, session["accountId"], session["currentDate"].isoformat(), amount)
-
-        session["balance"] = api_client.get_account_balance(session["accountId"])
-        session["loans"] = api_client.get_all_loans(session["customerId"])
-
-        response_state = session.copy()
-        response_state["currentDate"] = response_state["currentDate"].isoformat()
-
-        return jsonify({
-            "message": f"Successfully paid ${amount} towards your loan.",
-            "playerState": response_state
-        })
-
-    except Exception as e:
-        print(f"Error paying loan: {e}")
-        return jsonify({"error": "Failed to process loan payment."}), 500
 
 @app.route('/game/history', methods=['POST'])
 def get_history():

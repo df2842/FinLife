@@ -1,5 +1,5 @@
 document.addEventListener('DOMContentLoaded', () => {
-    // CRITICAL FIX: Ensure this port matches the port in your app.py file (PORT = 3000)
+    // CRITICAL FIX: Ensure this port matches the port in your app.py file
     const API_BASE_URL = 'http://127.0.0.1:5000';
     let gameId = null;
 
@@ -18,8 +18,6 @@ document.addEventListener('DOMContentLoaded', () => {
     const firstNameInput = document.getElementById('firstName');
     const lastNameInput = document.getElementById('lastName');
     const scorecardModal = document.getElementById('scorecard-modal');
-    const payLoanButton = document.getElementById('pay-loan-button');
-    const loanAmountInput = document.getElementById('loan-amount-input');
     const historyButton = document.getElementById('history-button');
     const historyDropdown = document.getElementById('history-dropdown');
 
@@ -29,7 +27,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
     function updateStatusUI(playerState) {
         ageDisplay.textContent = `Age: ${playerState.age}`;
-        // Use toLocaleString for better number formatting (e.g., 50,000)
+        // Use toLocaleString for better number formatting (e.g., $50,000)
         moneyDisplay.textContent = `$${Math.round(playerState.balance).toLocaleString()}`;
     }
 
@@ -50,7 +48,7 @@ document.addEventListener('DOMContentLoaded', () => {
         event.choices.forEach(choice => {
             const button = document.createElement('button');
             button.textContent = choice.description;
-            // ROBUST FIX: Check for 'action' or 'income' to determine event type
+            // Check for 'action' (MCQ) or 'income' (Job) to determine event type
             button.onclick = () => handleChoiceClick(choice);
             choicesContainer.appendChild(button);
         });
@@ -62,6 +60,7 @@ document.addEventListener('DOMContentLoaded', () => {
     function showScorecard(summary) {
         document.getElementById('persona-title').textContent = summary.persona_title || "Analysis Complete";
         document.getElementById('summary-text').textContent = summary.summary || "Could not generate summary.";
+        // Assuming best_decision and worst_decision are arrays of strings
         document.getElementById('best-decisions').innerHTML = Array.isArray(summary.best_decision)
             ? summary.best_decision.join('<br>') : summary.best_decision;
         document.getElementById('worst-decisions').innerHTML = Array.isArray(summary.worst_decision)
@@ -76,7 +75,7 @@ document.addEventListener('DOMContentLoaded', () => {
         showLoader();
         choicesContainer.innerHTML = '';
 
-        // ROBUST FIX: Determine endpoint by checking for a unique key in the financial_impact
+        // Determine endpoint by checking for a unique key in the financial_impact
         const endpoint = choice.financial_impact.hasOwnProperty('action') ? '/decision/mcq' : '/decision/job';
 
         const response = await fetch(`${API_BASE_URL}${endpoint}`, {
@@ -88,22 +87,21 @@ document.addEventListener('DOMContentLoaded', () => {
         const data = await response.json();
 
         // Check for and log any errors from the backend decision processing
-        if (data.error) {
-            console.error("Decision Error:", data.error);
-            alert(`Error processing decision: ${data.error}`);
+        if (!response.ok || data.error) {
+            console.error("Decision Error:", data.error || `Server error: ${response.status}`);
+            alert(`Error processing decision: ${data.error || 'Check console for server status.'}`);
             hideLoader();
-            // Re-render the advance button, but keep error message on screen
             choicesContainer.classList.add('hidden');
             nextYearContainer.classList.remove('hidden');
             return;
         }
 
+        // FIX FOR BALANCE LAG: Use the playerState returned directly from the decision endpoint
         updateStatusUI(data.playerState);
 
-        // --- NEW LOGIC: Display chosen option ---
+        // Show the chosen option in the story panel
         scenarioTitle.textContent = "Decision Made";
         storyText.textContent = `You decided: ${choice.description}`;
-        // --- END NEW LOGIC ---
 
         hideLoader();
         choicesContainer.classList.add('hidden');
@@ -122,10 +120,10 @@ document.addEventListener('DOMContentLoaded', () => {
 
         if (data.gameOver) {
             showScorecard(data.finalSummary);
-        } else if (data.error) {
-             // If advancing year fails (e.g., balance too low for expenses, but game didn't crash)
+        } else if (!response.ok || data.error) {
+            // Handle critical errors during year advance
             scenarioTitle.textContent = "Error Advancing Year";
-            storyText.textContent = `Error: ${data.error}. Check your balance or transaction history for details.`;
+            storyText.textContent = `Error: ${data.error}. The game could not advance. Check the console.`;
             choicesContainer.innerHTML = '';
             choicesContainer.classList.add('hidden');
             nextYearContainer.classList.remove('hidden');
@@ -133,30 +131,6 @@ document.addEventListener('DOMContentLoaded', () => {
             updateStatusUI(data.playerState);
             renderEvent(data.nextEvent);
         }
-    });
-
-    payLoanButton.addEventListener('click', async () => {
-        const amount = parseInt(loanAmountInput.value, 10);
-        if (!amount || amount <= 0) {
-            alert("Please enter a valid amount to pay.");
-            return;
-        }
-        showLoader();
-        const response = await fetch(`${API_BASE_URL}/game/pay-loan`, {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ gameId, amount })
-        });
-        const data = await response.json();
-        hideLoader();
-
-        if (data.error) {
-             alert(`Error: ${data.error}`);
-        } else {
-            updateStatusUI(data.playerState);
-            alert(data.message);
-        }
-        loanAmountInput.value = '';
     });
 
     historyButton.addEventListener('click', async () => {
@@ -176,7 +150,10 @@ document.addEventListener('DOMContentLoaded', () => {
         if (data.transaction_history && data.transaction_history.length > 0) {
             data.transaction_history.forEach(item => {
                 const li = document.createElement('li');
-                li.innerHTML = `<strong>${item.transaction_date}</strong>: ${item.description || item.type} <span>$${Math.round(item.amount).toLocaleString()}</span>`;
+                // Format the transaction type and amount
+                const amountText = item.type === 'deposit' ? `(+$${Math.round(item.amount).toLocaleString()})`
+                                  : `(-$${Math.round(item.amount).toLocaleString()})`;
+                li.innerHTML = `<strong>${item.transaction_date}</strong>: ${item.description || item.type} <span>${amountText}</span>`;
                 historyDropdown.appendChild(li);
             });
         } else {
