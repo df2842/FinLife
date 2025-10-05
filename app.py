@@ -8,7 +8,7 @@ import ai_agent
 app = Flask(__name__)
 CORS(app)
 
-PORT = 5500
+PORT = 5000
 START_BALANCE = 50000
 ANNUAL_EXPENSES = 40000
 START_AGE = 16
@@ -32,7 +32,7 @@ def start_game():
         game_sessions[game_id] = {
             "customerId": customer_id,
             "accountId": account_id,
-            "age": START_AGE,
+            "age": START_AGE - 1,
             "currentDate": date(date.today().year, 1, 1),
             "balance": START_BALANCE,
             "income": 0,

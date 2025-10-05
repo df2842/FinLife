@@ -20,7 +20,7 @@ def create_customer(first_name, last_name):
 
 def create_account(customer_id, balance):
     url = f"{BASE_URL}/customers/{customer_id}/accounts?key={API_KEY}"
-    payload = {"type": "Checking", "nickname": "checking", "balance": balance}
+    payload = {"type": "Checking", "nickname": "checking", "balance": balance, "rewards": 0}
     response = requests.post(url, json=payload)
     response.raise_for_status()
     return response.json()["objectCreated"]["_id"]
@@ -63,9 +63,15 @@ def make_loan_payment(loan_id, paying_account_id, date, amount):
 
 def get_all_loans(customer_id):
     url = f"{BASE_URL}/customers/{customer_id}/loans?key={API_KEY}"
-    response = requests.get(url)
-    response.raise_for_status()
-    return response.json()
+    try:
+        response = requests.get(url)
+        response.raise_for_status()
+        return response.json()
+    except requests.exceptions.HTTPError as e:
+        if e.response.status_code == 404:
+            return []
+        else:
+            raise
 
 def get_account_balance(account_id):
     url = f"{BASE_URL}/accounts/{account_id}?key={API_KEY}"

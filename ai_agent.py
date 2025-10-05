@@ -8,7 +8,7 @@ genai.configure(api_key=os.getenv("GEMINI_API_KEY"))
 
 def _call_generative_model(prompt):
     try:
-        model = genai.GenerativeModel('gemini-pro')
+        model = genai.GenerativeModel('gemini-flash-latest')
         response = model.generate_content(prompt)
         cleaned_text = response.text.replace("```json", "").replace("```", "").strip()
         return json.loads(cleaned_text)

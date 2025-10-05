@@ -9,38 +9,53 @@
 </head>
 <body>
 
-    <div id="game-container">
-        
-        <div id="loader">
-            <div class="spinner"></div>
+<div id="game-container">
+    <div id="start-screen">
+        <h1>Capital Quest</h1>
+        <p>Welcome to Capital Quest! This isn't just a game—it's your financial life story. Every choice you make, from college to career to buying a house, has real financial consequences. Learn to master your money, build wealth, and see the long-term impact of your decisions. Remember to pay off your loans!</p>
+        <p>Enter your character's name to begin your financial journey.</p>
+        <div class="input-group">
+            <input type="text" id="firstName" placeholder="First Name">
+            <input type="text" id="lastName" placeholder="Last Name">
         </div>
-        <div id="instruction-screen" class="hidden">
-            <h1>Welcome to Capital Quest!</h1>
-            <p>Your goal is to navigate life by making financial decisions. Try to retire with the highest net worth possible!</p>
-            <p>All trademarks are the property of their respective owners. any resembelnce to real people or real events is coincidental.</p>
-        </div>
-
-        <div id="game-content" class="hidden">
-            <h1 id="heading-basic">Capital Quest</h1>
-            <header id="status-bar">
-                <div id="age-display">Age: 16</div>
-                <div id="money-bar-container">
-                    <span id="money-display">$500</span>
-                </div>
-            </header>
-            <main>
-                <div id="story-panel">
-                    <p id="story-text"></p>
-                </div>
-                <div id="choices-container"></div>
-                <div id="next-year-container" class="hidden">
-                    <button id="next-year-button">Advance to Next Year</button>
-                </div>
-            </main>
-        </div>
+        <button id="start-button">Start Game</button>
+        <p class="disclaimer">All trademarks are the property of their respective owners. Any resemblance to real people or events is coincidental.</p>
     </div>
 
-    <div id="scorecard-modal" class="hidden">
+    <div id="game-content" class="hidden">
+        <h1 id="heading-basic">Capital Quest</h1>
+        <header id="status-bar">
+            <div id="age-display">Age: 16</div>
+            <div id="money-bar-container">
+                <span id="money-display">$50,000</span>
+            </div>
+        </header>
+        <main>
+            <div id="story-panel">
+                <h2 id="scenario-title"></h2>
+                <p id="story-text"></p>
+            </div>
+            <div id="choices-container"></div>
+            <div id="next-year-container" class="hidden">
+                <button id="next-year-button">Advance to Next Year</button>
+            </div>
+        </main>
+        <footer id="utility-bar">
+            <div id="loan-payment-section">
+                <input type="number" id="loan-amount-input" placeholder="Pay Loan Amt">
+                <button id="pay-loan-button">Pay</button>
+            </div>
+            <div class="dropdown">
+                <button id="history-button">Transaction Log</button>
+                <div id="history-dropdown" class="dropdown-content">
+                </div>
+            </div>
+        </footer>
+    </div>
+</div>
+
+<div id="scorecard-modal" class="hidden">
+    <div class="modal-content">
         <h2 id="persona-title"></h2>
         <p id="summary-text"></p>
         <div class="decision-box">
@@ -53,7 +68,12 @@
         </div>
         <button id="restart-button">Play Again</button>
     </div>
+</div>
 
-    <script src="script.js"></script>
+<div id="loader" class="hidden">
+    <div class="spinner"></div>
+</div>
+
+<script src="script.js"></script>
 </body>
 </html>
