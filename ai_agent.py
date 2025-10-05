@@ -42,6 +42,7 @@ def generate_mcq(name, age, date, balance, income, life_events, specifier="N/A")
         - For WITHDRAWAL, use (-$<amount>).
     2.  A "financial_impact" JSON object. This object MUST contain a string "action", an integer "amount", and a string "description".
         The action must be one of: ["DEPOSIT", "WITHDRAWAL"].
+    If the choice has a $0 change and doesn't have a financial impact, categorize it as a $0 deposit.
 
     Example Output Format (for a player who previously started a side-hustle):
     {{
@@ -109,7 +110,7 @@ def generate_jo(name, age, income, title, life_events):
 
     return _call_generative_model(prompt)
 
-def generate_fs(name, balance, income, history):
+def generate_fs(name, balance, income, life_events, history):
     simplified_history = [
         f"Date: {t.get('transaction_date')}, Type: {t.get('type')}, Amount: ${t.get('amount'):,.2f}, Desc: {t.get('description', 'N/A')}"
         for t in history
@@ -122,6 +123,7 @@ def generate_fs(name, balance, income, history):
     Name: {name}
     Final Balance: ${balance:,.2f}
     Final Annual Income: ${income:,.2f}
+    Notable Past Life Events: {life_events if life_events else 'None'}
     --------------------------
 
     --- Complete Transaction History ---

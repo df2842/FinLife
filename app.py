@@ -91,7 +91,7 @@ def advance_year():
 
         if session["age"] >= 67:
             transaction_history = api_client.get_all_transactions_for_account(session["accountId"])
-            final_summary = ai_agent.generate_fs(session["name"], session["balance"], session["income"], transaction_history)
+            final_summary = ai_agent.generate_fs(session["name"], session["balance"], session["income"], session["life_events"], transaction_history)
 
             response_state = session.copy()
             response_state["currentDate"] = response_state["currentDate"].isoformat()
@@ -159,10 +159,11 @@ def make_mcq_decision():
         description = impact["description"]
         sim_date = session["currentDate"].isoformat()
 
-        if action == "WITHDRAWAL":
-            api_client.make_withdrawal(session["accountId"], sim_date, amount, description)
-        else:
-            api_client.make_deposit(session["accountId"], sim_date, amount, description)
+        if amount != 0:
+            if action == "WITHDRAWAL":
+                api_client.make_withdrawal(session["accountId"], sim_date, amount, description)
+            else:
+                api_client.make_deposit(session["accountId"], sim_date, amount, description)
 
         session["balance"] = api_client.get_account_balance(session["accountId"])
         session["life_events"].append(description)
@@ -236,7 +237,7 @@ def fast_forward():
 
         if session["age"] >= 67:
             transaction_history = api_client.get_all_transactions_for_account(session["accountId"])
-            final_summary = ai_agent.generate_fs(session["name"], session["balance"], session["income"], transaction_history)
+            final_summary = ai_agent.generate_fs(session["name"], session["balance"], session["income"], session["life_events"], transaction_history)
 
             response_state = session.copy()
             response_state["currentDate"] = response_state["currentDate"].isoformat()
