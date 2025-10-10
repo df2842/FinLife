@@ -27,19 +27,36 @@
         <header id="status-bar">
             <div id="age-display">Age: 16</div>
             <div id="money-bar-container">
-                <span id="money-display">$50,000</span>
+                <span id="money-display"></span>
             </div>
         </header>
         <main>
             <div id="story-panel">
-                <h2 id="scenario-title"></h2>
-                <p id="story-text"></p>
+                    <h2 id="scenario-title"></h2>
+                    <p id="story-text"></p>
             </div>
-            <div id="choices-container"></div>
+            <div id="split-container">
+                <div id="bitmoji">
+                    <video id="vid-kid-hi" src="2.mp4" loop muted playsinline class="hidden"></video>
+                    <video id="vid-kid-chilling" src="6.mp4" loop muted playsinline class="hidden"></video>
+                    <video id="vid-kid-thinking" src="3.mp4" loop muted playsinline class="hidden"></video>
+                    <video id="vid-kid-surprised" src="4.mp4" loop muted playsinline class="hidden"></video>
+                    <video id="vid-kid-looking" src="5.mp4" loop muted playsinline class="hidden"></video>
+                
+                    <video id="vid-adult-looking" src="8.mp4" loop muted playsinline class="hidden"></video>
+                    <video id="vid-adult-happy" src="9.mp4" loop muted playsinline class="hidden"></video>
+                    <video id="vid-adult-excited" src="10.mp4" loop muted playsinline class="hidden"></video>
+                    <video id="vid-adult-sad" src="11.mp4" loop muted playsinline class="hidden"></video>
+
+                    <video id="vid-old-guy" src="12.mp4" loop muted playsinline class="hidden"></video>
+                </div>
+                <div id="choices-container"></div>
+            </div>
             <div id="next-year-container" class="hidden">
                 <button id="next-year-button">Advance to Next Year</button>
             </div>
         </main>
+
         <footer id="utility-bar">
             <div id="age-jump-section">
                 <input type="number" id="jump-age-input" placeholder="Jump to Age">
