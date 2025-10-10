@@ -3,17 +3,20 @@ document.addEventListener('DOMContentLoaded', () => {
     const START_BALANCE = 10000;
     let gameId = null;
     let transactionLog = [];
+    let currentPlayerState = {}; 
 
     const loader = document.getElementById('loader');
     const startScreen = document.getElementById('start-screen');
     const startButton = document.getElementById('start-button');
     const gameContent = document.getElementById('game-content');
+    const splitContainer = document.getElementById('split-container');
+    const bitmojiContainer = document.getElementById('bitmoji');
     const ageDisplay = document.getElementById('age-display');
     const moneyDisplay = document.getElementById('money-display');
     const scenarioTitle = document.getElementById('scenario-title');
     const storyText = document.getElementById('story-text');
     const choicesContainer = document.getElementById('choices-container');
-    const nextYearContainer = document.getElementById('next-year-container');
+    const nextYearContainer = document = document.getElementById('next-year-container');
     const nextYearButton = document.getElementById('next-year-button');
     const firstNameInput = document.getElementById('firstName');
     const lastNameInput = document.getElementById('lastName');
@@ -23,12 +26,43 @@ document.addEventListener('DOMContentLoaded', () => {
     const jumpAgeInput = document.getElementById('jump-age-input');
     const jumpButton = document.getElementById('jump-button');
 
-    function showLoader() { loader.classList.remove('hidden'); }
-    function hideLoader() { loader.classList.add('hidden'); }
+    // --- VIDEO PLAYLISTS ---
+    const kidVideoPlaylist_withHi = ['vid-kid-hi', 'vid-kid-chilling', 'vid-kid-thinking', 'vid-kid-surprised', 'vid-kid-looking'];
+    const kidVideoPlaylist_noHi = ['vid-kid-chilling', 'vid-kid-thinking', 'vid-kid-surprised', 'vid-kid-looking'];
+    const adultVideoPlaylist = ['vid-adult-looking', 'vid-adult-happy', 'vid-adult-sad', 'vid-adult-excited'];
+    const oldGuyVideo = 'vid-old-guy';
 
+    // --- VIDEO CONTROL FUNCTIONS ---
+    function hideAllVideos() {
+        bitmojiContainer.querySelectorAll('video').forEach(vid => vid.classList.add('hidden'));
+    }
+
+    function showVideo(videoId) {
+        hideAllVideos();
+        const video = document.getElementById(videoId);
+        if (video) {
+            video.classList.remove('hidden');
+            video.play().catch(e => console.error("Video play failed:", e));
+        }
+    }
+
+    //  LOADER 
+    function showLoader() {
+        loader.classList.remove('hidden');
+        splitContainer.classList.add('hidden'); 
+    }
+
+    function hideLoader() {
+        loader.classList.add('hidden');
+    }
+
+    // --- CORE GAME FUNCTIONS ---
     function updateStatusUI(playerState) {
         if (!playerState) return;
-        if (playerState.age) ageDisplay.textContent = `Age: ${playerState.age}`;
+        currentPlayerState = playerState;
+        if (playerState.age) {
+            ageDisplay.textContent = `Age: ${playerState.age}`;
+        }
         if (playerState.hasOwnProperty('balance')) {
             moneyDisplay.textContent = `$${Math.round(playerState.balance).toLocaleString()}`;
         }
@@ -41,7 +75,22 @@ document.addEventListener('DOMContentLoaded', () => {
             choicesContainer.innerHTML = '';
             choicesContainer.classList.add('hidden');
             nextYearContainer.classList.remove('hidden');
+            showVideo('vid-kid-sad');
+            splitContainer.classList.add('hidden'); 
             return;
+        }
+
+        if (currentPlayerState.age === 16) {
+            showVideo('vid-kid-hi');
+        } else if (currentPlayerState.age >= 50) {
+            showVideo(oldGuyVideo);
+        } else if (currentPlayerState.age >= 24) {
+            const randomVideoId = adultVideoPlaylist[Math.floor(Math.random() * adultVideoPlaylist.length)];
+            showVideo(randomVideoId);
+        } else {
+            const playlist = kidVideoPlaylist_noHi;
+            const randomVideoId = playlist[Math.floor(Math.random() * playlist.length)];
+            showVideo(randomVideoId);
         }
 
         scenarioTitle.textContent = event.scenario_title;
@@ -57,6 +106,9 @@ document.addEventListener('DOMContentLoaded', () => {
 
         choicesContainer.classList.remove('hidden');
         nextYearContainer.classList.add('hidden');
+
+        
+        splitContainer.classList.remove('hidden');
     }
 
     function showScorecard(summary) {
@@ -64,7 +116,6 @@ document.addEventListener('DOMContentLoaded', () => {
         document.getElementById('summary-text').textContent = summary.summary;
         document.getElementById('best-decisions').innerHTML = summary.best_decision;
         document.getElementById('worst-decisions').innerHTML = summary.worst_decision;
-
         scorecardModal.classList.remove('hidden');
         document.getElementById('restart-button').onclick = () => window.location.reload();
     }
@@ -96,10 +147,10 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     }
 
+    // EVENT LISTENERS AND HANDLERS 
     async function handleChoiceClick(choice) {
         showLoader();
         choicesContainer.innerHTML = '';
-
         const endpoint = choice.financial_impact.hasOwnProperty('action') ? '/decision/mcq' : '/decision/job';
 
         try {
@@ -108,19 +159,14 @@ document.addEventListener('DOMContentLoaded', () => {
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({ gameId, choice })
             });
-
             const data = await response.json();
             if (!response.ok || data.error) throw new Error(data.error || `Server error: ${response.status}`);
-
             scenarioTitle.textContent = "Decision Made";
             storyText.textContent = `You decided: ${choice.description}`;
-
             if (data.playerState) {
                 updateStatusUI(data.playerState);
             }
-
             await updateTransactionLogAndBalance();
-
         } catch (error) {
             console.error("handleChoiceClick Error:", error);
             alert(`Error processing decision: ${error.message}`);
@@ -128,6 +174,9 @@ document.addEventListener('DOMContentLoaded', () => {
             hideLoader();
             choicesContainer.classList.add('hidden');
             nextYearContainer.classList.remove('hidden');
+
+          
+            splitContainer.classList.add('hidden');
         }
     }
 
@@ -139,34 +188,30 @@ document.addEventListener('DOMContentLoaded', () => {
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({ gameId })
             });
-
             const data = await response.json();
             if (!response.ok || data.error) throw new Error(data.error || `Server error: ${response.status}`);
-
             if (data.gameOver) {
                 showScorecard(data.finalSummary);
+                splitContainer.classList.add('hidden'); 
             } else {
                 updateStatusUI(data.playerState);
-                renderEvent(data.nextEvent);
+                renderEvent(data.nextEvent); 
                 await updateTransactionLogAndBalance();
             }
-
         } catch (error) {
             console.error("advance-year Error:", error);
             scenarioTitle.textContent = "Error Advancing Year";
             storyText.textContent = `Error: ${error.message}. Could not advance.`;
+            splitContainer.classList.add('hidden'); 
         } finally {
             hideLoader();
         }
     });
 
-
     historyButton.addEventListener('click', async () => {
         const isVisible = historyDropdown.classList.toggle('show');
         if (!isVisible) return;
-
         historyDropdown.innerHTML = '<li>Loading...</li>';
-
         try {
             const response = await fetch(`${API_BASE_URL}/game/history`, {
                 method: 'POST',
@@ -174,25 +219,19 @@ document.addEventListener('DOMContentLoaded', () => {
                 body: JSON.stringify({ gameId })
             });
             const data = await response.json();
-
             transactionLog = data.transaction_history || [];
             historyDropdown.innerHTML = '';
-
             if (transactionLog.length > 0) {
                 transactionLog.forEach(item => {
                     const li = document.createElement('li');
-                    const amountText = item.type === 'deposit'
-                        ? `(+\$${Math.round(item.amount).toLocaleString()})`
-                        : `(-\$${Math.round(item.amount).toLocaleString()})`;
+                    const amountText = item.type === 'deposit' ? `(+\$${Math.round(item.amount).toLocaleString()})` : `(-\$${Math.round(item.amount).toLocaleString()})`;
                     li.innerHTML = `<strong>${item.transaction_date}</strong>: ${item.description || item.type} <span>${amountText}</span>`;
                     historyDropdown.appendChild(li);
                 });
             } else {
                 historyDropdown.innerHTML = '<li>No transactions yet.</li>';
             }
-
             recalculateBalanceFromTransactions();
-
         } catch (error) {
             console.error("Failed to load history:", error);
             historyDropdown.innerHTML = '<li>Error loading history</li>';
@@ -202,33 +241,29 @@ document.addEventListener('DOMContentLoaded', () => {
     jumpButton.addEventListener('click', async () => {
         const currentAge = parseInt(ageDisplay.textContent.replace('Age: ', ''), 10);
         const targetAge = parseInt(jumpAgeInput.value, 10);
-
         if (isNaN(targetAge) || targetAge <= currentAge || targetAge > 67) {
             alert(`Please enter a valid target age between ${currentAge + 1} and 67.`);
             return;
         }
-
         showLoader();
         choicesContainer.innerHTML = '';
         nextYearContainer.classList.add('hidden');
         storyText.textContent = `Initiating fast forward to age ${targetAge}...`;
-
         const response = await fetch(`${API_BASE_URL}/game/fast-forward`, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({ gameId: gameId, targetAge: targetAge })
         });
-
         const responseData = await response.json();
         hideLoader();
         jumpAgeInput.value = '';
-
         if (responseData.gameOver) {
             showScorecard(responseData.finalSummary);
         } else if (!response.ok || responseData.error) {
             alert(`Fast forward failed: ${responseData.error || 'Check console for server error.'}`);
             updateStatusUI(responseData.playerState);
             nextYearContainer.classList.remove('hidden');
+            splitContainer.classList.add('hidden'); // Ensure hidden on fast forward error
         } else {
             updateStatusUI(responseData.playerState);
             renderEvent(responseData.nextEvent);
@@ -239,35 +274,29 @@ document.addEventListener('DOMContentLoaded', () => {
     startButton.addEventListener('click', async () => {
         const firstName = firstNameInput.value.trim();
         const lastName = lastNameInput.value.trim();
-
         if (!firstName || !lastName) {
             alert("Please enter a first and last name.");
             return;
         }
-
         showLoader();
         startScreen.classList.add('hidden');
         gameContent.classList.remove('hidden');
-
         try {
             const response = await fetch(`${API_BASE_URL}/game/start`, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({ firstName, lastName })
             });
-
             if (!response.ok) throw new Error(`Server error: ${response.status}`);
-
             const data = await response.json();
             gameId = data.gameId;
             updateStatusUI(data.playerState);
-
             nextYearButton.click();
-
         } catch (error) {
             hideLoader();
             console.error("Failed to start game:", error);
             alert("Could not start the game. Make sure the backend is running.");
+            splitContainer.classList.add('hidden'); 
         }
     });
 });
