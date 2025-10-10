@@ -54,6 +54,39 @@ body {
 }
 #start-screen .disclaimer { font-size: 0.75rem; color: #888; margin-top: auto; padding-top: 1rem; }
 
+
+
+/* After Game Starts */
+
+#split-container{
+    display: flex;
+    align-items: center;
+    padding: 1.5rem 2rem 2rem 4rem; /* Top Right Bottom Left */
+    gap: 1rem;
+}
+
+#bitmoji {
+    right:20px;
+    align-items: center;
+    justify-content: center;
+    width: 250px;
+    height: 250px;
+    border-radius: 50%;
+    border-color: #344e41;
+    background-color: #e6e6e6;
+    border: 4px solid #344e41;
+    position: relative; /* Ensures video stays inside */
+    overflow: hidden; /* Hides the corners of the video */
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+    }
+   
+    
+    #bitmoji video {
+        width: 100%;
+        height: 100%;
+        object-fit: cover; /* This is the key property */
+    }
+
 #game-content { display: flex; flex-direction: column; flex-grow: 1; }
 #heading-basic {
     font-family: 'Oswald', sans-serif;
@@ -92,7 +125,7 @@ main {
     font-size: 1.25rem;
     line-height: 1.6;
 }
-#choices-container { display: grid; gap: 0.75rem; padding: 1.5rem; }
+#choices-container { display: grid; gap: 0.75rem; padding: 1.5rem; flex:1;flex-basis:70%; }
 #choices-container button, #next-year-button {
     font-family: 'Inter', sans-serif;
     font-size: 1rem;
